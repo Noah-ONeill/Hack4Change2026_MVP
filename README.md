@@ -6,3 +6,4 @@ The items then get matched through the coordinators and once items are recieved 
 AI Usage:
 - Used ChatGPT to brainstorm and help come up with general system architecture
 - Used Claude to assist with a basic 1st iteration of the application
+ ----
