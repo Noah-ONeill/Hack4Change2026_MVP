@@ -1,6 +1,8 @@
-export type Role = 'COORDINATOR' | 'STAFF';
+export type Role = 'STAFF';
 export type Urgency = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+export type ItemCategory = 'FOOD' | 'CLOTHING' | 'HYGIENE' | 'BEDDING' | 'OTHER';
 export type DonationStatus = 'OFFERED' | 'ASSIGNED' | 'DELIVERED' | 'RECEIVED';
+export type DonationType = 'DROP_OFF' | 'PICKUP_REQUEST';
 export type TransferStatus = 'PENDING' | 'IN_TRANSIT' | 'COMPLETED';
 export type AnnouncementType = 'EXPIRY' | 'SURPLUS' | 'URGENT';
 
@@ -20,6 +22,7 @@ export interface Item {
   description: string;
   unit: string;
   expiryRelevant: boolean;
+  category: ItemCategory;
 }
 
 export interface Need {
@@ -36,10 +39,14 @@ export interface Donation {
   id: number;
   donorName: string;
   donorEmail: string;
+  donorPhone: string | null;
   item: Item;
   quantity: number;
   expiryDate: string | null;
   status: DonationStatus;
+  donationType: DonationType;
+  pickupAddress: string | null;
+  pickupCity: string | null;
   createdAt: string;
 }
 
@@ -48,7 +55,6 @@ export interface Transfer {
   donation: Donation;
   toOrganization: Organization;
   quantityAssigned: number;
-  coordinator: { id: number; name: string; email: string };
   status: TransferStatus;
   createdAt: string;
 }

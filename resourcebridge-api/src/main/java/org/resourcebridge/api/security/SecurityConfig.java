@@ -32,29 +32,29 @@ public class SecurityConfig {
                 // --- Public endpoints ---
                 .requestMatchers("/api/auth/**").permitAll()
 
-                // Donors can browse needs and items without logging in
+                // Donors browse needs, items, orgs, announcements without logging in
                 .requestMatchers(HttpMethod.GET, "/api/needs/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/organizations/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/items/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/announcements/**").permitAll()
 
-                // Donors submit donations without an account
+                // Donors submit donations without an account — auto-matching fires server-side
                 .requestMatchers(HttpMethod.POST, "/api/donations").permitAll()
 
-                // --- Shelter Staff ---
+                // --- Shelter Staff (authenticated) ---
                 .requestMatchers(HttpMethod.POST, "/api/needs").hasRole("STAFF")
-                .requestMatchers(HttpMethod.PATCH, "/api/needs/*/fulfill").hasAnyRole("STAFF", "COORDINATOR")
+                .requestMatchers(HttpMethod.PATCH, "/api/needs/*/fulfill").hasRole("STAFF")
                 .requestMatchers(HttpMethod.POST, "/api/inventory").hasRole("STAFF")
                 .requestMatchers(HttpMethod.PUT, "/api/inventory/**").hasRole("STAFF")
-                .requestMatchers(HttpMethod.GET, "/api/inventory/**").hasAnyRole("STAFF", "COORDINATOR")
+                .requestMatchers(HttpMethod.GET, "/api/inventory/**").hasRole("STAFF")
                 .requestMatchers(HttpMethod.POST, "/api/announcements").hasRole("STAFF")
 
-                // --- Coordinator ---
-                .requestMatchers(HttpMethod.POST, "/api/transfers").hasRole("COORDINATOR")
-                .requestMatchers(HttpMethod.PATCH, "/api/transfers/**").hasRole("COORDINATOR")
-                .requestMatchers(HttpMethod.GET, "/api/transfers/**").hasAnyRole("COORDINATOR", "STAFF")
-                .requestMatchers(HttpMethod.GET, "/api/donations/**").hasAnyRole("COORDINATOR", "STAFF")
-                .requestMatchers(HttpMethod.PATCH, "/api/donations/**").hasRole("COORDINATOR")
+                // Staff see incoming transfers and confirm receipt
+                .requestMatchers(HttpMethod.GET, "/api/transfers/**").hasRole("STAFF")
+                .requestMatchers(HttpMethod.PATCH, "/api/transfers/**").hasRole("STAFF")
+
+                // Staff can see donation details
+                .requestMatchers(HttpMethod.GET, "/api/donations/**").hasRole("STAFF")
 
                 // Everything else requires authentication
                 .anyRequest().authenticated()

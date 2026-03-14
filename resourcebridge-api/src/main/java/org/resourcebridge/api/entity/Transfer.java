@@ -26,10 +26,6 @@ public class Transfer {
     @Column(nullable = false)
     private int quantityAssigned;
 
-    @ManyToOne
-    @JoinColumn(name = "coordinator_id", nullable = false)
-    private User coordinator;
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private TransferStatus status;

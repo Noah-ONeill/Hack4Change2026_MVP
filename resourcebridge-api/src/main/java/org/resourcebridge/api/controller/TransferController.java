@@ -26,19 +26,13 @@ public class TransferController {
         return ResponseEntity.ok(transferService.getById(id));
     }
 
-    // GET /api/transfers/organization/1 — shelter staff sees incoming transfers
+    // GET /api/transfers/organization/1 — shelter staff sees their incoming transfers
     @GetMapping("/organization/{organizationId}")
     public List<Transfer> getByOrganization(@PathVariable Long organizationId) {
         return transferService.findByOrganizationId(organizationId);
     }
 
-    // GET /api/transfers/coordinator/2 — coordinator sees their assigned transfers
-    @GetMapping("/coordinator/{coordinatorId}")
-    public List<Transfer> getByCoordinator(@PathVariable Long coordinatorId) {
-        return transferService.findByCoordinatorId(coordinatorId);
-    }
-
-    // GET /api/transfers/donation/5 — check all transfers for a donation
+    // GET /api/transfers/donation/5 — check transfers for a specific donation
     @GetMapping("/donation/{donationId}")
     public List<Transfer> getByDonation(@PathVariable Long donationId) {
         return transferService.findByDonationId(donationId);
@@ -50,13 +44,7 @@ public class TransferController {
         return transferService.findByStatus(status);
     }
 
-    // POST /api/transfers — coordinator assigns donation to a shelter
-    @PostMapping
-    public ResponseEntity<Transfer> create(@RequestBody Transfer transfer) {
-        return ResponseEntity.ok(transferService.save(transfer));
-    }
-
-    // PATCH /api/transfers/1/status?status=DELIVERED — update transfer progress
+    // PATCH /api/transfers/1/status?status=DELIVERED — staff confirms receipt
     @PatchMapping("/{id}/status")
     public ResponseEntity<Transfer> updateStatus(
             @PathVariable Long id,

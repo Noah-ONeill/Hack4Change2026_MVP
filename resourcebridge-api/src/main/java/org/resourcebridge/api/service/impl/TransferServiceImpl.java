@@ -43,11 +43,6 @@ public class TransferServiceImpl implements TransferService {
     }
 
     @Override
-    public List<Transfer> findByCoordinatorId(Long coordinatorId) {
-        return transferRepository.findByCoordinatorId(coordinatorId);
-    }
-
-    @Override
     public List<Transfer> findByStatus(TransferStatus status) {
         return transferRepository.findByStatus(status);
     }

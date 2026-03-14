@@ -6,6 +6,7 @@ import org.resourcebridge.api.enums.DonationStatus;
 import org.resourcebridge.api.exception.ResourceNotFoundException;
 import org.resourcebridge.api.repository.DonationRepository;
 import org.resourcebridge.api.service.DonationService;
+import org.resourcebridge.api.service.MatchingService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,6 +16,7 @@ import java.util.List;
 public class DonationServiceImpl implements DonationService {
 
     private final DonationRepository donationRepository;
+    private final MatchingService matchingService;
 
     @Override
     public List<Donation> getAll() {
@@ -29,7 +31,18 @@ public class DonationServiceImpl implements DonationService {
 
     @Override
     public Donation save(Donation donation) {
-        return donationRepository.save(donation);
+        if (donation.getStatus() == null) {
+            donation.setStatus(DonationStatus.OFFERED);
+        }
+        Donation saved = donationRepository.save(donation);
+
+        // Auto-match to the highest-urgency need for this item
+        if (saved.getStatus() == DonationStatus.OFFERED) {
+            matchingService.autoMatch(saved);
+            return donationRepository.findById(saved.getId()).orElse(saved);
+        }
+
+        return saved;
     }
 
     @Override

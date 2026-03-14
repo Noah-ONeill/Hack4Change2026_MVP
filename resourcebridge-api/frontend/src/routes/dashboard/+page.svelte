@@ -6,8 +6,6 @@
   onMount(() => {
     auth.init();
     if (!$auth.token) { goto('/login'); return; }
-    if ($auth.role === 'COORDINATOR') goto('/dashboard/coordinator');
-    else if ($auth.role === 'STAFF') goto('/dashboard/staff');
-    else goto('/login');
+    goto('/dashboard/staff');
   });
 </script>

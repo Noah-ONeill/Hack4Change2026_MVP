@@ -17,15 +17,7 @@
     goto('/');
   }
 
-  let role = $derived($auth.role);
   let currentPath = $derived($page.url.pathname);
-
-  const coordNav = [
-    { href: '/dashboard/coordinator', label: 'Dashboard', icon: '📊' },
-    { href: '/dashboard/coordinator#needs', label: 'All Needs', icon: '📋' },
-    { href: '/dashboard/coordinator#donations', label: 'Donations', icon: '🎁' },
-    { href: '/dashboard/coordinator#transfers', label: 'Transfers', icon: '🚚' },
-  ];
 
   const staffNav = [
     { href: '/dashboard/staff', label: 'Dashboard', icon: '📊' },
@@ -33,8 +25,6 @@
     { href: '/dashboard/staff#needs', label: 'Our Needs', icon: '📋' },
     { href: '/dashboard/staff#transfers', label: 'Incoming', icon: '🚚' },
   ];
-
-  let nav = $derived(role === 'COORDINATOR' ? coordNav : staffNav);
 </script>
 
 {#if $auth.token}
@@ -51,7 +41,7 @@
     </div>
 
     <nav class="flex-1 p-3 space-y-1">
-      {#each nav as item}
+      {#each staffNav as item}
         <a
           href={item.href}
           class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors
@@ -67,7 +57,7 @@
         <div class="text-xs font-semibold text-gray-900 truncate">{$auth.name}</div>
         <div class="text-xs text-gray-400 truncate">{$auth.email}</div>
         <div class="inline-flex items-center mt-1 px-2 py-0.5 bg-brand-100 text-brand-700 rounded-full text-xs font-medium">
-          {role}
+          Shelter Staff
         </div>
       </div>
       <button

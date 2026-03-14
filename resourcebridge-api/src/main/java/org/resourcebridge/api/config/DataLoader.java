@@ -3,6 +3,7 @@ package org.resourcebridge.api.config;
 import lombok.RequiredArgsConstructor;
 import org.resourcebridge.api.entity.*;
 import org.resourcebridge.api.enums.*;
+import static org.resourcebridge.api.enums.DonationType.*;
 import org.resourcebridge.api.repository.*;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -27,7 +28,6 @@ public class DataLoader implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        // Only seed if DB is empty
         if (organizationRepository.count() > 0) return;
 
         // ── ORGANIZATIONS ──────────────────────────────────────────
@@ -43,46 +43,41 @@ public class DataLoader implements CommandLineRunner {
         Organization humanity    = org("The Humanity Project",          "Meals + Outreach",              "449 St George St, Moncton, NB",      "Anyone in need",                      "TheHumanityProjectNB@gmail.com","506-382-6840");
 
         // ── ITEMS ──────────────────────────────────────────────────
-        Item soup      = item("Canned Soup",        "Chicken noodle, tomato varieties",  "cans",    true);
-        Item beans     = item("Canned Beans",        "Black, kidney, chickpea",           "cans",    true);
-        Item milk      = item("Shelf-Stable Milk",   "1L cartons, UHT",                   "cartons", true);
-        Item granola   = item("Granola Bars",        "Individually wrapped variety pack", "boxes",   true);
-        Item formula   = item("Baby Formula",        "Powdered, 0–12 months",             "cans",    true);
-        Item toothpaste= item("Toothpaste",          "Standard tube",                     "tubes",   false);
-        Item tshirt    = item("T-Shirts",            "Mixed sizes, men and women",        "pieces",  false);
-        Item blanket   = item("Blankets",            "Fleece or wool",                    "pieces",  false);
-        Item shampoo   = item("Shampoo",             "250ml bottle",                      "bottles", false);
-        Item jeans     = item("Jeans",               "Mixed sizes",                       "pieces",  false);
+        Item soup      = item("Canned Soup",        "Chicken noodle, tomato varieties",  "cans",    true,  ItemCategory.FOOD);
+        Item beans     = item("Canned Beans",        "Black, kidney, chickpea",           "cans",    true,  ItemCategory.FOOD);
+        Item milk      = item("Shelf-Stable Milk",   "1L cartons, UHT",                   "cartons", true,  ItemCategory.FOOD);
+        Item granola   = item("Granola Bars",        "Individually wrapped variety pack", "boxes",   true,  ItemCategory.FOOD);
+        Item formula   = item("Baby Formula",        "Powdered, 0-12 months",             "cans",    true,  ItemCategory.FOOD);
+        Item toothpaste= item("Toothpaste",          "Standard tube",                     "tubes",   false, ItemCategory.HYGIENE);
+        Item tshirt    = item("T-Shirts",            "Mixed sizes, men and women",        "pieces",  false, ItemCategory.CLOTHING);
+        Item blanket   = item("Blankets",            "Fleece or wool",                    "pieces",  false, ItemCategory.BEDDING);
+        Item shampoo   = item("Shampoo",             "250ml bottle",                      "bottles", false, ItemCategory.HYGIENE);
+        Item jeans     = item("Jeans",               "Mixed sizes",                       "pieces",  false, ItemCategory.CLOTHING);
 
-        // ── DEMO USERS ─────────────────────────────────────────────
-        user("Sarah Coordinator", "coordinator@resourcebridge.ca", "demo1234", Role.COORDINATOR, nazareth);
-        user("James Staff",       "staff@resourcebridge.ca",       "demo1234", Role.STAFF,       nazareth);
-        user("Marie Lefebvre",    "marie@harvesthouse.ca",         "demo1234", Role.STAFF,       harvest);
-        user("Tom Walsh",         "tom@crossroads.ca",             "demo1234", Role.STAFF,       crossroads);
+        // ── DEMO USERS (STAFF only) ─────────────────────────────────
+        user("James Staff",    "staff@resourcebridge.ca",  "demo1234", Role.STAFF, nazareth);
+        user("Marie Lefebvre", "marie@harvesthouse.ca",    "demo1234", Role.STAFF, harvest);
+        user("Tom Walsh",      "tom@crossroads.ca",        "demo1234", Role.STAFF, crossroads);
 
         // ── INVENTORY ──────────────────────────────────────────────
-        // House of Nazareth — some items expiring soon
-        inventory(nazareth, soup,      24, LocalDate.now().plusDays(5));   // expiring in 5 days!
+        inventory(nazareth, soup,      24, LocalDate.now().plusDays(5));   // expiring soon!
         inventory(nazareth, blanket,   12, null);
         inventory(nazareth, toothpaste,30, null);
-        inventory(nazareth, milk,       8, LocalDate.now().plusDays(3));   // expiring in 3 days!
+        inventory(nazareth, milk,       8, LocalDate.now().plusDays(3));   // expiring soon!
 
-        // Harvest House
         inventory(harvest, beans,     18, LocalDate.now().plusDays(60));
         inventory(harvest, tshirt,    20, null);
         inventory(harvest, shampoo,   15, null);
 
-        // Crossroads for Women
-        inventory(crossroads, formula,  6, LocalDate.now().plusDays(4));   // expiring in 4 days!
+        inventory(crossroads, formula,  6, LocalDate.now().plusDays(4));   // expiring soon!
         inventory(crossroads, granola, 10, LocalDate.now().plusDays(20));
 
-        // Peter McKee Food Centre
         inventory(peterMckee, soup,   50, LocalDate.now().plusDays(90));
         inventory(peterMckee, beans,  40, LocalDate.now().plusDays(120));
 
         // ── NEEDS ──────────────────────────────────────────────────
-        need(crossroads,  formula,    12, Urgency.CRITICAL);   // women's shelter needs baby formula urgently
-        need(nazareth,    blanket,    20, Urgency.CRITICAL);   // emergency shelter — winter
+        need(crossroads,  formula,    12, Urgency.CRITICAL);
+        need(nazareth,    blanket,    20, Urgency.CRITICAL);
         need(harvest,     soup,       30, Urgency.HIGH);
         need(ywca,        formula,     8, Urgency.HIGH);
         need(johnHoward,  tshirt,     15, Urgency.HIGH);
@@ -93,12 +88,14 @@ public class DataLoader implements CommandLineRunner {
         need(nazareth,    shampoo,    20, Urgency.LOW);
 
         // ── DONATIONS ──────────────────────────────────────────────
-        Donation d1 = donation("Marie Tremblay",  "marie.t@gmail.com",     blanket,    15, null,                              DonationStatus.OFFERED);
-        Donation d2 = donation("John Smith",       "john.s@outlook.com",    soup,       24, LocalDate.now().plusDays(60),      DonationStatus.OFFERED);
-        Donation d3 = donation("Isabelle Roy",     "isabelle@hotmail.com",  formula,     6, LocalDate.now().plusDays(30),      DonationStatus.OFFERED);
-        Donation d4 = donation("Robert Chen",      "rchen@gmail.com",       tshirt,     20, null,                              DonationStatus.ASSIGNED);
-        Donation d5 = donation("Nadia Williams",   "nadia.w@gmail.com",     granola,    16, LocalDate.now().plusDays(45),      DonationStatus.DELIVERED);
-        Donation d6 = donation("François Leblanc", "fleblanc@gmail.com",    toothpaste, 35, null,                              DonationStatus.RECEIVED);
+        // OFFERED donations — will show as available
+        Donation d1 = donation("Marie Tremblay",  "marie.t@gmail.com",     blanket,    15, null,                         DonationStatus.OFFERED,   DonationType.DROP_OFF,      null,                         null);
+        Donation d2 = donation("John Smith",      "john.s@outlook.com",    soup,       24, LocalDate.now().plusDays(60), DonationStatus.OFFERED,   DonationType.PICKUP_REQUEST,"45 Elmwood Dr, Moncton",     "Moncton");
+        Donation d3 = donation("Isabelle Roy",    "isabelle@hotmail.com",  formula,     6, LocalDate.now().plusDays(30), DonationStatus.OFFERED,   DonationType.PICKUP_REQUEST,"112 Champlain St, Dieppe",   "Dieppe");
+        // Already-processed donations for demo history
+        Donation d4 = donation("Robert Chen",     "rchen@gmail.com",       tshirt,     20, null,                         DonationStatus.ASSIGNED,  DonationType.DROP_OFF,      null,                         null);
+        Donation d5 = donation("Nadia Williams",  "nadia.w@gmail.com",     granola,    16, LocalDate.now().plusDays(45), DonationStatus.DELIVERED, DonationType.PICKUP_REQUEST,"88 Pine St, Riverview",      "Riverview");
+        Donation d6 = donation("François Leblanc","fleblanc@gmail.com",    toothpaste, 35, null,                         DonationStatus.RECEIVED,  DonationType.DROP_OFF,      null,                         null);
 
         // ── ANNOUNCEMENTS ──────────────────────────────────────────
         announcement(nazareth,   milk,    8,  AnnouncementType.EXPIRY,  "Shelf-stable milk expiring in 3 days — can any org use these?");
@@ -107,11 +104,10 @@ public class DataLoader implements CommandLineRunner {
         announcement(harvest,    tshirt, 15,  AnnouncementType.SURPLUS, "Clothing surplus: T-shirts in all sizes available for pickup");
         announcement(nazareth,   soup,    8,  AnnouncementType.EXPIRY,  "Canned soup expiring soon — redistributing to shelters in need");
 
-        // ── TRANSFERS ──────────────────────────────────────────────
-        User coordinator = userRepository.findByEmail("coordinator@resourcebridge.ca").orElseThrow();
-        transfer(d4, johnHoward, 15, coordinator, TransferStatus.IN_TRANSIT);
-        transfer(d5, humanity,   16, coordinator, TransferStatus.COMPLETED);
-        transfer(d6, salvation,  35, coordinator, TransferStatus.COMPLETED);
+        // ── TRANSFERS (auto-matched history for demo) ───────────────
+        transfer(d4, johnHoward, 15, TransferStatus.IN_TRANSIT);
+        transfer(d5, humanity,   16, TransferStatus.COMPLETED);
+        transfer(d6, salvation,  35, TransferStatus.COMPLETED);
 
         System.out.println("✅ ResourceBridge seed data loaded successfully!");
     }
@@ -125,9 +121,10 @@ public class DataLoader implements CommandLineRunner {
         return organizationRepository.save(o);
     }
 
-    private Item item(String name, String desc, String unit, boolean expiryRelevant) {
+    private Item item(String name, String desc, String unit, boolean expiryRelevant, ItemCategory category) {
         Item i = new Item();
-        i.setName(name); i.setDescription(desc); i.setUnit(unit); i.setExpiryRelevant(expiryRelevant);
+        i.setName(name); i.setDescription(desc); i.setUnit(unit);
+        i.setExpiryRelevant(expiryRelevant); i.setCategory(category);
         return itemRepository.save(i);
     }
 
@@ -154,11 +151,16 @@ public class DataLoader implements CommandLineRunner {
         needRepository.save(n);
     }
 
-    private Donation donation(String donorName, String donorEmail, Item item, int qty, LocalDate expiry, DonationStatus status) {
+    private Donation donation(String donorName, String donorEmail, Item item, int qty, LocalDate expiry,
+                              DonationStatus status, DonationType donationType,
+                              String pickupAddress, String pickupCity) {
         Donation d = new Donation();
         d.setDonorName(donorName); d.setDonorEmail(donorEmail);
         d.setItem(item); d.setQuantity(qty);
         d.setExpiryDate(expiry); d.setStatus(status);
+        d.setDonationType(donationType);
+        d.setPickupAddress(pickupAddress);
+        d.setPickupCity(pickupCity);
         d.setCreatedAt(LocalDateTime.now());
         return donationRepository.save(d);
     }
@@ -171,10 +173,10 @@ public class DataLoader implements CommandLineRunner {
         announcementRepository.save(a);
     }
 
-    private void transfer(Donation donation, Organization toOrg, int qty, User coordinator, TransferStatus status) {
+    private void transfer(Donation donation, Organization toOrg, int qty, TransferStatus status) {
         Transfer t = new Transfer();
         t.setDonation(donation); t.setToOrganization(toOrg);
-        t.setQuantityAssigned(qty); t.setCoordinator(coordinator);
+        t.setQuantityAssigned(qty);
         t.setStatus(status); t.setCreatedAt(LocalDateTime.now());
         transferRepository.save(t);
     }

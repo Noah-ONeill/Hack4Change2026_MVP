@@ -2,6 +2,7 @@ package org.resourcebridge.api.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import org.resourcebridge.api.enums.ItemCategory;
 
 @Data
 @Entity
@@ -17,7 +18,11 @@ public class Item {
 
     private String description;
 
-    private String unit; // kg, pieces, liters, boxes, etc.
+    private String unit; // cans, pieces, boxes, bottles, etc.
 
     private boolean expiryRelevant;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ItemCategory category;
 }

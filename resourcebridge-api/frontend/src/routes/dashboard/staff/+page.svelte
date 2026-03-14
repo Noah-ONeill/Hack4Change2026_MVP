@@ -10,7 +10,18 @@
   import StatusBadge from '$lib/components/StatusBadge.svelte';
   import UrgencyBadge from '$lib/components/UrgencyBadge.svelte';
   import EmptyState from '$lib/components/EmptyState.svelte';
-  import type { Inventory, Need, Item } from '$lib/types';
+  import type { Inventory, Need, Item, ItemCategory } from '$lib/types';
+
+  const INV_CATEGORIES: { value: ItemCategory | ''; label: string; emoji: string }[] = [
+    { value: '',         label: 'All',      emoji: '📦' },
+    { value: 'FOOD',     label: 'Food',     emoji: '🍎' },
+    { value: 'CLOTHING', label: 'Clothing', emoji: '👕' },
+    { value: 'HYGIENE',  label: 'Hygiene',  emoji: '🧴' },
+    { value: 'BEDDING',  label: 'Bedding',  emoji: '🛏️' },
+    { value: 'OTHER',    label: 'Other',    emoji: '📁' },
+  ];
+
+  let invCategoryFilter = $state<ItemCategory | ''>('');
 
   let inventory = $state<Inventory[]>([]);
   let expiring = $state<Inventory[]>([]);
@@ -142,6 +153,11 @@
   }
 
   let openNeeds = $derived(needs.filter(n => !n.fulfilled));
+  let filteredInventory = $derived(
+    invCategoryFilter
+      ? inventory.filter(inv => inv.item?.category === invCategoryFilter)
+      : inventory
+  );
 </script>
 
 <svelte:head><title>Staff Dashboard — ResourceBridge</title></svelte:head>
@@ -175,19 +191,43 @@
     <div class="bg-white rounded-xl shadow-sm border border-gray-100">
       <div class="p-4 border-b border-gray-50 flex items-center justify-between">
         <h2 class="font-semibold text-gray-900">📦 Inventory</h2>
-        <span class="text-xs text-gray-400">{inventory.length} items</span>
+        <span class="text-xs text-gray-400">{filteredInventory.length} / {inventory.length} items</span>
+      </div>
+      <!-- Category filter tabs -->
+      <div class="px-4 pt-3 pb-2 flex gap-1.5 flex-wrap border-b border-gray-50">
+        {#each INV_CATEGORIES as cat}
+          {@const count = cat.value === '' ? inventory.length : inventory.filter(i => i.item?.category === cat.value).length}
+          {#if count > 0 || cat.value === ''}
+            <button
+              onclick={() => invCategoryFilter = cat.value}
+              class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border transition-all
+                {invCategoryFilter === cat.value
+                  ? 'bg-brand-500 text-white border-brand-500'
+                  : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-brand-300'}">
+              {cat.emoji} {cat.label}
+              {#if count > 0}<span class="opacity-70">{count}</span>{/if}
+            </button>
+          {/if}
+        {/each}
       </div>
       <div class="divide-y divide-gray-50 max-h-48 overflow-y-auto">
         {#if loading}
           <div class="p-4 space-y-2">{#each [1,2,3] as _}<div class="h-10 bg-gray-50 animate-pulse rounded"></div>{/each}</div>
-        {:else if inventory.length === 0}
-          <EmptyState message="No inventory yet" icon="📦" />
+        {:else if filteredInventory.length === 0}
+          {@const activeCat = INV_CATEGORIES.find(c => c.value === invCategoryFilter)}
+          <EmptyState message={invCategoryFilter ? `No ${activeCat?.label} items yet` : 'No inventory yet'} icon={activeCat?.emoji ?? '📦'} />
         {:else}
-          {#each inventory as inv}
+          {#each filteredInventory as inv}
+            {@const cat = INV_CATEGORIES.find(c => c.value === inv.item?.category)}
             <div class="flex items-center justify-between px-4 py-3 text-sm">
-              <span class="font-medium text-gray-800">{inv.item?.name}</span>
-              <span class="text-gray-500">{inv.quantity} {inv.item?.unit}</span>
-              {#if inv.expiryDate}<span class="text-xs text-orange-500">{inv.expiryDate}</span>{/if}
+              <div>
+                <span class="font-medium text-gray-800">{inv.item?.name}</span>
+                {#if cat?.value}<span class="ml-1.5 text-xs text-gray-400">{cat.emoji}</span>{/if}
+              </div>
+              <div class="flex items-center gap-3">
+                <span class="text-gray-600 font-medium">{inv.quantity} <span class="text-gray-400 font-normal">{inv.item?.unit}</span></span>
+                {#if inv.expiryDate}<span class="text-xs text-orange-500 font-medium">exp {inv.expiryDate}</span>{/if}
+              </div>
             </div>
           {/each}
         {/if}
@@ -256,8 +296,9 @@
   <div class="grid lg:grid-cols-2 gap-6">
     <!-- INCOMING TRANSFERS -->
     <div class="bg-white rounded-xl shadow-sm border border-gray-100">
-      <div class="p-4 border-b border-gray-50">
+      <div class="p-4 border-b border-gray-50 flex items-center justify-between">
         <h2 class="font-semibold text-gray-900">🚚 Incoming Transfers</h2>
+        <span class="text-xs text-gray-400">{transfers.length} total</span>
       </div>
       {#if loading}
         <div class="p-4 space-y-2">{#each [1,2] as _}<div class="h-12 bg-gray-50 animate-pulse rounded"></div>{/each}</div>
@@ -266,12 +307,40 @@
       {:else}
         <div class="divide-y divide-gray-50">
           {#each transfers as t}
-            <div class="flex items-center justify-between px-4 py-3 text-sm">
-              <div>
-                <span class="font-medium text-gray-800">{t.donation?.item?.name}</span>
-                <span class="text-xs text-gray-400 ml-2">{t.quantityAssigned} units</span>
+            <div class="px-4 py-3 text-sm">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="font-medium text-gray-800">{t.donation?.item?.name}</span>
+                  <span class="text-xs text-gray-400">{t.quantityAssigned} {t.donation?.item?.unit}</span>
+                  <!-- Pickup badge -->
+                  {#if t.donation?.donationType === 'PICKUP_REQUEST'}
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 text-blue-700 rounded-full text-xs font-medium">
+                      🚐 Pickup
+                    </span>
+                  {:else}
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 text-gray-500 rounded-full text-xs font-medium">
+                      🏠 Drop-off
+                    </span>
+                  {/if}
+                </div>
+                <StatusBadge status={t.status} />
               </div>
-              <StatusBadge status={t.status} />
+              <!-- Pickup address details -->
+              {#if t.donation?.donationType === 'PICKUP_REQUEST' && t.donation?.pickupAddress}
+                <div class="mt-2 flex items-start gap-1.5 bg-blue-50 rounded-lg px-3 py-2">
+                  <span class="text-blue-400 text-xs mt-0.5">📍</span>
+                  <div>
+                    <div class="text-xs font-medium text-blue-800">{t.donation.pickupAddress}, {t.donation.pickupCity}</div>
+                    <div class="text-xs text-blue-500">
+                      {t.donation.donorName}
+                      {#if t.donation.donorPhone}
+                        · <a href="tel:{t.donation.donorPhone}" class="hover:underline font-medium">📞 {t.donation.donorPhone}</a>
+                      {/if}
+                      · <a href="mailto:{t.donation.donorEmail}" class="hover:underline">{t.donation.donorEmail}</a>
+                    </div>
+                  </div>
+                </div>
+              {/if}
             </div>
           {/each}
         </div>

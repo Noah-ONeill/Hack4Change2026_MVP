@@ -9,8 +9,6 @@ public interface TransferService extends GenericService<Transfer> {
 
     List<Transfer> findByOrganizationId(Long organizationId);
 
-    List<Transfer> findByCoordinatorId(Long coordinatorId);
-
     List<Transfer> findByStatus(TransferStatus status);
 
     List<Transfer> findByDonationId(Long donationId);
