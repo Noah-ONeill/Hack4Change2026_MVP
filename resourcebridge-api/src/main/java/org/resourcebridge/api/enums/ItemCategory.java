@@ -4,6 +4,5 @@ public enum ItemCategory {
     FOOD,
     CLOTHING,
     HYGIENE,
-    BEDDING,
-    OTHER
+    BEDDING
 }

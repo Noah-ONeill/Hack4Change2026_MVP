@@ -8,7 +8,6 @@ import org.resourcebridge.api.service.ItemService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -35,11 +34,6 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public void deleteById(Long id) {
         itemRepository.deleteById(id);
-    }
-
-    @Override
-    public Optional<Item> findByName(String name) {
-        return itemRepository.findByName(name);
     }
 
     @Override

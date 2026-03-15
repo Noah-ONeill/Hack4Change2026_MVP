@@ -8,7 +8,6 @@ import org.resourcebridge.api.service.OrganizationService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -35,11 +34,6 @@ public class OrganizationServiceImpl implements OrganizationService {
     @Override
     public void deleteById(Long id) {
         organizationRepository.deleteById(id);
-    }
-
-    @Override
-    public Optional<Organization> findByName(String name) {
-        return organizationRepository.findByName(name);
     }
 
     @Override

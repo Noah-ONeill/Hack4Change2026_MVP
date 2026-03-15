@@ -9,7 +9,6 @@ import org.resourcebridge.api.service.UserService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -39,11 +38,6 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Optional<User> findByEmail(String email) {
-        return userRepository.findByEmail(email);
-    }
-
-    @Override
     public List<User> findByRole(Role role) {
         return userRepository.findByRole(role);
     }
@@ -53,8 +47,4 @@ public class UserServiceImpl implements UserService {
         return userRepository.findByOrganizationId(organizationId);
     }
 
-    @Override
-    public boolean existsByEmail(String email) {
-        return userRepository.existsByEmail(email);
-    }
 }

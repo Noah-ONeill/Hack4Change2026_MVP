@@ -24,8 +24,6 @@ public class Donation {
     @Column(nullable = false)
     private String donorEmail;
 
-    private String donorPhone;
-
     @ManyToOne
     @JoinColumn(name = "item_id", nullable = false)
     private Item item;
