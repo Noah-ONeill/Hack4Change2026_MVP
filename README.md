@@ -1,7 +1,8 @@
 # Hack4Change2026_MVP
 We built a simple yet effective website to help homeless organizations coordinate with people who want to donate items.
 The app will allow the basic user to make a donation of anything they may have or help organizations with urgent needs that show on the front page.
-Once a user has chosen to donate, they can choose the organization or let the system find a best match, select the item they wish to donate and an optional expiry date.
+Once a user has chosen to donate, they can optionally click over and browse the needs of all shelters, search for any specefic items they might have to see what shelters need it or filter by item category or request urgency
+Once done browsing needs the donor can click back to the donation tab and they can choose the organization or let the system find a best match, select the item they wish to donate and an optional expiry date.
 Next step is to choose whether they can drop off the donation (preferred) or request a pick up. Only people inside greater moncton can request a pick up for now but if you select outside of moncton it will give you the email, phone number and address of 1 option to donate to in your area.
 Last step would be to input your info with a name, an email and an optional phone number.
 On the staff side once staff members have logged in they are met with a dashboard that shows at the top if anything in your inventory is close to expiring.
