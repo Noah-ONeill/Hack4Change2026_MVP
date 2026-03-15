@@ -2,9 +2,11 @@ package org.resourcebridge.api.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.resourcebridge.api.entity.Transfer;
+import org.resourcebridge.api.entity.User;
 import org.resourcebridge.api.enums.TransferStatus;
 import org.resourcebridge.api.service.TransferService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,6 +26,15 @@ public class TransferController {
     @GetMapping("/{id}")
     public ResponseEntity<Transfer> getById(@PathVariable Long id) {
         return ResponseEntity.ok(transferService.getById(id));
+    }
+
+    // GET /api/transfers/my — staff sees ONLY their own organization's incoming transfers
+    @GetMapping("/my")
+    public ResponseEntity<List<Transfer>> getMyTransfers(@AuthenticationPrincipal User user) {
+        if (user.getOrganization() == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        return ResponseEntity.ok(transferService.findByOrganizationId(user.getOrganization().getId()));
     }
 
     // GET /api/transfers/organization/1 — shelter staff sees their incoming transfers
