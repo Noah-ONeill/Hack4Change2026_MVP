@@ -49,9 +49,10 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/inventory/**").hasRole("STAFF")
                 .requestMatchers(HttpMethod.POST, "/api/announcements").hasRole("STAFF")
 
-                // Staff see incoming transfers and confirm receipt
-                .requestMatchers(HttpMethod.GET, "/api/transfers/**").hasRole("STAFF")
+                // Staff see incoming transfers, confirm receipt, and delete
+                .requestMatchers(HttpMethod.GET, "/api/transfers", "/api/transfers/**").hasRole("STAFF")
                 .requestMatchers(HttpMethod.PATCH, "/api/transfers/**").hasRole("STAFF")
+                .requestMatchers(HttpMethod.DELETE, "/api/transfers", "/api/transfers/**").hasRole("STAFF")
 
                 // Staff can see donation details
                 .requestMatchers(HttpMethod.GET, "/api/donations/**").hasRole("STAFF")

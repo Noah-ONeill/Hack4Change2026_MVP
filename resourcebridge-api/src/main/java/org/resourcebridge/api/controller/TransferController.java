@@ -68,4 +68,11 @@ public class TransferController {
         transferService.deleteById(id);
         return ResponseEntity.noContent().build();
     }
+
+    // DELETE /api/transfers — staff clears all transfers (e.g. reset for testing)
+    @DeleteMapping
+    public ResponseEntity<Void> deleteAll() {
+        transferService.deleteAll();
+        return ResponseEntity.noContent().build();
+    }
 }

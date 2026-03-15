@@ -14,4 +14,6 @@ public interface TransferService extends GenericService<Transfer> {
     List<Transfer> findByDonationId(Long donationId);
 
     Transfer updateStatus(Long transferId, TransferStatus status);
+
+    void deleteAll();
 }
