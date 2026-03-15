@@ -1,10 +1,10 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { auth } from '$lib/stores/auth';
-  import { getByOrg as getInventory, getExpiring, createInventory } from '$lib/api/inventory';
+  import { getByOrg as getInventory, getExpiring, createInventory, deleteInventory } from '$lib/api/inventory';
   import { getByOrg as getOrgNeeds, createNeed, fulfillNeed } from '$lib/api/needs';
-  import { getByOrg as getTransfers } from '$lib/api/transfers';
-  import { getByOrg as getAnnouncements, createAnnouncement } from '$lib/api/announcements';
+  import { getByOrg as getTransfers, updateStatus as updateTransferStatus, deleteTransfer } from '$lib/api/transfers';
+  import { getByOrg as getAnnouncements, createAnnouncement, deleteAnnouncement } from '$lib/api/announcements';
   import { getAll as getItems } from '$lib/api/items';
   import { showToast } from '$lib/stores/toast';
   import StatusBadge from '$lib/components/StatusBadge.svelte';
@@ -84,13 +84,13 @@
     if (!needItemId) return;
     needSubmitting = true;
     try {
-      const created = await createNeed({
+      await createNeed({
         organization: { id: $auth.organizationId },
         item: { id: needItemId },
         quantityNeeded: Number(needQty),
         urgency: needUrgency
       }, $auth.token!);
-      needs = [...needs, created];
+      needs = await getOrgNeeds($auth.organizationId!, $auth.token!);
       showToast('Need posted successfully!');
       needQty = 1; needUrgency = 'MEDIUM';
     } catch (e: any) {
@@ -110,8 +110,8 @@
         quantity: Number(invQty)
       };
       if (invExpiry) body.expiryDate = invExpiry;
-      const created = await createInventory(body, $auth.token!);
-      inventory = [...inventory, created];
+      await createInventory(body, $auth.token!);
+      inventory = await getInventory($auth.organizationId!, $auth.token!);
       showToast('Inventory updated!');
       invQty = 1; invExpiry = '';
     } catch (e: any) {
@@ -149,6 +149,49 @@
       showToast('Need marked as fulfilled');
     } catch {
       showToast('Failed to update need', 'error');
+    }
+  }
+
+  async function removeAnnouncement(id: number) {
+    try {
+      await deleteAnnouncement(id, $auth.token!);
+      announcements = announcements.filter(a => a.id !== id);
+      showToast('Announcement deleted');
+    } catch {
+      showToast('Failed to delete announcement', 'error');
+    }
+  }
+
+  async function removeInventory(id: number) {
+    try {
+      await deleteInventory(id, $auth.token!);
+      inventory = inventory.filter(inv => inv.id !== id);
+      showToast('Inventory item deleted');
+    } catch {
+      showToast('Failed to delete inventory item', 'error');
+    }
+  }
+
+  async function markTransferReceived(id: number) {
+    try {
+      const updated = await updateTransferStatus(id, 'RECEIVED', $auth.token!);
+      transfers = transfers.map(t => t.id === id ? updated : t);
+      // Refresh inventory since backend auto-adds on RECEIVED
+      inventory = await getInventory($auth.organizationId!, $auth.token!);
+      showToast('Transfer marked as received — inventory updated!');
+    } catch (e: any) {
+      console.error('markTransferReceived error:', e);
+      showToast(e?.message || 'Failed to update transfer', 'error');
+    }
+  }
+
+  async function removeTransfer(id: number) {
+    try {
+      await deleteTransfer(id, $auth.token!);
+      transfers = transfers.filter(t => t.id !== id);
+      showToast('Transfer deleted');
+    } catch {
+      showToast('Failed to delete transfer', 'error');
     }
   }
 
@@ -227,6 +270,11 @@
               <div class="flex items-center gap-3">
                 <span class="text-gray-600 font-medium">{inv.quantity} <span class="text-gray-400 font-normal">{inv.item?.unit}</span></span>
                 {#if inv.expiryDate}<span class="text-xs text-orange-500 font-medium">exp {inv.expiryDate}</span>{/if}
+                <button
+                  onclick={() => removeInventory(inv.id)}
+                  class="text-xs text-red-400 hover:text-red-600 font-medium">
+                  ✕
+                </button>
               </div>
             </div>
           {/each}
@@ -323,7 +371,21 @@
                     </span>
                   {/if}
                 </div>
-                <StatusBadge status={t.status} />
+                <div class="flex items-center gap-2">
+                  <StatusBadge status={t.status} />
+                  {#if t.status !== 'RECEIVED' && t.status !== 'COMPLETED'}
+                    <button
+                      onclick={() => markTransferReceived(t.id)}
+                      class="text-xs text-green-600 font-medium hover:underline whitespace-nowrap">
+                      ✓ Receive
+                    </button>
+                  {/if}
+                  <button
+                    onclick={() => removeTransfer(t.id)}
+                    class="text-xs text-red-400 hover:text-red-600 font-medium">
+                    ✕
+                  </button>
+                </div>
               </div>
               <!-- Pickup address details -->
               {#if t.donation?.donationType === 'PICKUP_REQUEST' && t.donation?.pickupAddress}
@@ -359,7 +421,14 @@
           {#each announcements as ann}
             <div class="flex items-center justify-between px-4 py-3 text-sm">
               <span class="text-gray-700 text-xs">{ann.message || ann.item?.name}</span>
-              <StatusBadge status={ann.type} />
+              <div class="flex items-center gap-2">
+                <StatusBadge status={ann.type} />
+                <button
+                  onclick={() => removeAnnouncement(ann.id)}
+                  class="text-xs text-red-400 hover:text-red-600 font-medium">
+                  ✕
+                </button>
+              </div>
             </div>
           {/each}
         {/if}

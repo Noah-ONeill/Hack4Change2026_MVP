@@ -3,7 +3,7 @@ export type Urgency = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
 export type ItemCategory = 'FOOD' | 'CLOTHING' | 'HYGIENE' | 'BEDDING' | 'OTHER';
 export type DonationStatus = 'OFFERED' | 'ASSIGNED' | 'DELIVERED' | 'RECEIVED';
 export type DonationType = 'DROP_OFF' | 'PICKUP_REQUEST';
-export type TransferStatus = 'PENDING' | 'IN_TRANSIT' | 'COMPLETED';
+export type TransferStatus = 'PENDING' | 'IN_TRANSIT' | 'RECEIVED' | 'COMPLETED';
 export type AnnouncementType = 'EXPIRY' | 'SURPLUS' | 'URGENT';
 
 export interface Organization {

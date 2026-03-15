@@ -51,8 +51,8 @@ public class SecurityConfig {
 
                 // Staff see incoming transfers, confirm receipt, and delete
                 .requestMatchers(HttpMethod.GET, "/api/transfers", "/api/transfers/**").hasRole("STAFF")
-                .requestMatchers(HttpMethod.PATCH, "/api/transfers/**").hasRole("STAFF")
-                .requestMatchers(HttpMethod.DELETE, "/api/transfers", "/api/transfers/**").hasRole("STAFF")
+                .requestMatchers(HttpMethod.PATCH, "/api/transfers/**").authenticated()
+                .requestMatchers(HttpMethod.DELETE, "/api/transfers/**").authenticated()
 
                 // Staff can see donation details
                 .requestMatchers(HttpMethod.GET, "/api/donations/**").hasRole("STAFF")
