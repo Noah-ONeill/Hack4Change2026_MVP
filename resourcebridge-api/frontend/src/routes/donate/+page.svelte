@@ -148,14 +148,16 @@
 
   // ── Lifecycle ─────────────────────────────────────────
   onMount(async () => {
-    // Open donate tab directly when ?tab=donate is in the URL
-    if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('tab') === 'donate') {
-      activeTab = 'donate';
-    }
+    const params = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : new URLSearchParams();
+    if (params.get('tab') === 'donate') activeTab = 'donate';
     try {
       const [n, i, o] = await Promise.all([getUnfulfilled(), getItems(), getOrgs()]);
       needs = n; items = i; orgs = o;
-      if (i.length > 0) selectedItemId = i[0].id;
+      const orgId  = params.get('orgId');
+      const itemId = params.get('itemId');
+      if (orgId)  selectedOrgId  = Number(orgId);
+      if (itemId) selectedItemId = Number(itemId);
+      else if (i.length > 0) selectedItemId = i[0].id;
     } catch {}
     finally { loading = false; }
   });

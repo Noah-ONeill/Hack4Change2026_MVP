@@ -89,7 +89,7 @@
                 </div>
                 <div class="flex flex-col items-end gap-2 shrink-0">
                   <UrgencyBadge urgency={need.urgency} />
-                  <a href="/donate?tab=donate"
+                  <a href="/donate?tab=donate&orgId={need.organization.id}&itemId={need.item.id}"
                     class="bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold
                            px-5 py-2 rounded-xl transition-colors whitespace-nowrap">
                     Donate this
